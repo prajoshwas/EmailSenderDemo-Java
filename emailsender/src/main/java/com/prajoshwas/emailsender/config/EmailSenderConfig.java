@@ -7,12 +7,9 @@ import lombok.Data;
 
 @Data
 @Configuration
-@ConfigurationProperties(prefix = "mailtrap.smtp")
+@ConfigurationProperties(prefix = "mailtrap.smtp.test")
 public class EmailSenderConfig {
 
-    private String host;
-    private String port;
-    private String username;
-    private String password;
+    private String token;
     private String url;
 }

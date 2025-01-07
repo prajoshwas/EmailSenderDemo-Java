@@ -16,6 +16,8 @@ import com.prajoshwas.emailsender.service.EmailService;
 import com.prajoshwas.emailsender.utility.GenericWebClientBuilder;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @Service
@@ -36,11 +38,7 @@ public class EmailServiceImpl implements EmailService {
 
             WebClient webClient = genericWebClientBuilder.buildWebClient(emailRequest);
 
-            MailTrapResponse mailTrapResponse = webClient.post().uri(emailSenderConfig.getUrl())
-                    .body(emailRequest, EmailRequest.class)
-                    .retrieve()
-                    .bodyToMono(MailTrapResponse.class)
-                    .block();
+            MailTrapResponse mailTrapResponse = performTestSend(webClient, emailRequest);
 
             if (BooleanUtils.isTrue(mailTrapResponse.getSuccess())
                     && !Objects.isNull(mailTrapResponse.getMessage_ids())) {
@@ -53,12 +51,34 @@ public class EmailServiceImpl implements EmailService {
 
             }
 
+        } catch (WebClientResponseException e) {
+
+            log.error("Unexpected Exception Occurred", e);
+            if (e.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
+                emailResponse = EmailResponse.builder()
+                        .status(HttpStatus.BAD_REQUEST)
+                        .message("Unathorized Email Request")
+                        .code("401")
+                        .build();
+            }
         } catch (Exception e) {
-            log.error("Unexpected Exception Occurred");
-            throw e;
+            log.error("Unexpected Exception Occurred", e);
+            emailResponse = EmailResponse.builder()
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .message("Unathorized Email Request")
+                    .code("500")
+                    .build();
         }
 
         return emailResponse;
     }
 
+    private MailTrapResponse performTestSend(WebClient webClient, EmailRequest emailRequest) {
+
+        MailTrapResponse mailTrapResponse = webClient.post().uri(emailSenderConfig.getUrl())
+                .body(Mono.just(emailRequest), EmailRequest.class)
+                .retrieve()
+                .bodyToMono(MailTrapResponse.class)
+                .block();
+    }
 }

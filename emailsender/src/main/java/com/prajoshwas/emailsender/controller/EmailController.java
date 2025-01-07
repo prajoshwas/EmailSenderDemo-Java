@@ -20,8 +20,8 @@ public class EmailController {
     @Autowired
     private EmailService emailService;
 
-    @PostMapping(value = "/email/send")
-    private ResponseEntity<EmailResponse> sendEmail(@RequestBody EmailRequest emailRequest) {
+    @PostMapping(value = "/email/test/send")
+    private ResponseEntity<EmailResponse> sendTestEmail(@RequestBody EmailRequest emailRequest) {
 
         EmailResponse emailResponse = emailService.sendEmail(emailRequest);
 

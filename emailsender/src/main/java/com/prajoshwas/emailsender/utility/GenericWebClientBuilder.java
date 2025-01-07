@@ -20,7 +20,7 @@ public class GenericWebClientBuilder {
         WebClient webClient = WebClient.builder()
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-                .defaultHeader(Constants.API_TOKEN, Constants.AUTH_BEARER + " " + emailSenderConfig.getPassword())
+                .defaultHeader(Constants.AUTHORIZATION, Constants.AUTH_BEARER + " " + emailSenderConfig.getToken())
                 .build();
 
         return webClient;
