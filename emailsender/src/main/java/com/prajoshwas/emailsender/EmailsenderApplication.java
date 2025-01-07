@@ -1,4 +1,4 @@
-package com.prajoshwas.emailsender.emailsender;
+package com.prajoshwas.emailsender;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

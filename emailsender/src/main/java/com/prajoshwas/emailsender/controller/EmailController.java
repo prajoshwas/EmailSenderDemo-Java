@@ -14,13 +14,13 @@ import com.prajoshwas.emailsender.dto.EmailRequest;
 import com.prajoshwas.emailsender.dto.EmailResponse;
 
 @RestController
-@RequestMapping("/v1/emailSender")
+@RequestMapping(value = "/v1/emailSender")
 public class EmailController {
 
     @Autowired
     private EmailService emailService;
 
-    @PostMapping("/email/send")
+    @PostMapping(value = "/email/send")
     private ResponseEntity<EmailResponse> sendEmail(@RequestBody EmailRequest emailRequest) {
 
         EmailResponse emailResponse = emailService.sendEmail(emailRequest);
@@ -28,7 +28,7 @@ public class EmailController {
         return new ResponseEntity<EmailResponse>(emailResponse, HttpStatus.OK);
     }
 
-    @GetMapping("/test/response")
+    @GetMapping(value = "/test/response")
     private ResponseEntity<EmailResponse> testEmail() {
 
         EmailResponse emailResponse = EmailResponse.builder()
