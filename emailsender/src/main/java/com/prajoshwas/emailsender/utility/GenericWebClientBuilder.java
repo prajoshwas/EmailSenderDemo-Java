@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import com.prajoshwas.emailsender.config.EmailSenderConfig;
 import com.prajoshwas.emailsender.constants.Constants;
-import com.prajoshwas.emailsender.dto.EmailRequest;
 
 @Component
 public class GenericWebClientBuilder {
@@ -15,7 +14,7 @@ public class GenericWebClientBuilder {
     @Autowired
     EmailSenderConfig emailSenderConfig;
 
-    public WebClient buildWebClient(EmailRequest emailRequest) {
+    public WebClient buildWebClient() {
 
         WebClient webClient = WebClient.builder()
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)

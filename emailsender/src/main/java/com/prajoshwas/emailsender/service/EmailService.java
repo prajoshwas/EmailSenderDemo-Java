@@ -6,4 +6,6 @@ import com.prajoshwas.emailsender.dto.EmailResponse;
 public interface EmailService {
 
     EmailResponse sendEmail(EmailRequest emailRequest);
+
+    EmailResponse sendProdEmail(EmailRequest emailRequest);
 }

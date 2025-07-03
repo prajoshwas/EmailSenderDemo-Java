@@ -39,4 +39,12 @@ public class EmailController {
         return new ResponseEntity<EmailResponse>(emailResponse, HttpStatus.OK);
     }
 
+    @PostMapping(value = "/jms-prod/email/send")
+    private ResponseEntity<EmailResponse> sendProdEmail(@RequestBody EmailRequest emailRequest) {
+
+        EmailResponse emailResponse = emailService.sendProdEmail(emailRequest);
+
+        return new ResponseEntity<EmailResponse>(emailResponse, HttpStatus.OK);
+    }
+
 }

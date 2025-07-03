@@ -36,7 +36,7 @@ public class EmailServiceImpl implements EmailService {
 
         try {
 
-            WebClient webClient = genericWebClientBuilder.buildWebClient(emailRequest);
+            WebClient webClient = genericWebClientBuilder.buildWebClient();
 
             MailTrapResponse mailTrapResponse = performTestSend(webClient, emailRequest);
 
@@ -56,7 +56,7 @@ public class EmailServiceImpl implements EmailService {
             log.error("Unexpected Exception Occurred", e);
             if (e.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
                 emailResponse = EmailResponse.builder()
-                        .status(HttpStatus.BAD_REQUEST)
+                        .status(HttpStatus.BAD_REQUEST.toString())
                         .message("Unathorized Email Request")
                         .code("401")
                         .build();
@@ -64,7 +64,7 @@ public class EmailServiceImpl implements EmailService {
         } catch (Exception e) {
             log.error("Unexpected Exception Occurred", e);
             emailResponse = EmailResponse.builder()
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR.toString())
                     .message("Unathorized Email Request")
                     .code("500")
                     .build();
@@ -80,5 +80,13 @@ public class EmailServiceImpl implements EmailService {
                 .retrieve()
                 .bodyToMono(MailTrapResponse.class)
                 .block();
+
+        return mailTrapResponse;
+    }
+
+    @Override
+    public EmailResponse sendProdEmail(EmailRequest emailRequest) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'sendProdEmail'");
     }
 }
