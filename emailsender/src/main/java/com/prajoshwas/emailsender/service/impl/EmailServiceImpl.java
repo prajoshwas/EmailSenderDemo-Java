@@ -1,12 +1,16 @@
 package com.prajoshwas.emailsender.service.impl;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.mail.MailSendException;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 
 import com.prajoshwas.emailsender.config.EmailSenderConfig;
 import com.prajoshwas.emailsender.dto.EmailRequest;
@@ -28,6 +32,9 @@ public class EmailServiceImpl implements EmailService {
 
     @Autowired
     EmailSenderConfig emailSenderConfig;
+
+    @Autowired
+    private JavaMailSender jakartaEmailSender;
 
     @Override
     public EmailResponse sendEmail(EmailRequest emailRequest) {
@@ -88,5 +95,45 @@ public class EmailServiceImpl implements EmailService {
     public EmailResponse sendProdEmail(EmailRequest emailRequest) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'sendProdEmail'");
+    }
+
+    @Override
+    public EmailResponse sendJakartaMail(EmailRequest emailRequest) {
+
+        EmailResponse response = null;
+
+        try {
+
+            SimpleMailMessage mail = new SimpleMailMessage();
+            mail.setFrom(emailRequest.getFrom().getEmail());
+            mail.setTo(emailRequest.getTo().get(0).getEmail());
+            mail.setSubject(emailRequest.getSubject());
+            mail.setText(emailRequest.getText());
+
+            log.info("Trying to send E-mail to recipient");
+            jakartaEmailSender.send(mail);
+
+        } catch (MailSendException mse) {
+
+            log.error("Mail Sending Failed encountered {}", mse.getMessage());
+
+            response = EmailResponse.builder()
+                    .code("400")
+                    .message("There is an issue sending the email")
+                    .status(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                    .build();
+
+        } catch (Exception ex) {
+            log.error("Unexpected Exception encountered {}", ex.getMessage());
+
+            response = EmailResponse.builder()
+                    .code("500")
+                    .message("Unexpected Exception Occurred")
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                    .build();
+
+        }
+
+        return response;
     }
 }

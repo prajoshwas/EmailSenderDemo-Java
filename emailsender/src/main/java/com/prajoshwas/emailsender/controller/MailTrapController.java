@@ -15,7 +15,7 @@ import com.prajoshwas.emailsender.dto.EmailResponse;
 
 @RestController
 @RequestMapping(value = "/v1/emailSender")
-public class EmailController {
+public class MailTrapController {
 
     @Autowired
     private EmailService emailService;
@@ -46,5 +46,4 @@ public class EmailController {
 
         return new ResponseEntity<EmailResponse>(emailResponse, HttpStatus.OK);
     }
-
 }

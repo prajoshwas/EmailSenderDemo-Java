@@ -8,4 +8,6 @@ public interface EmailService {
     EmailResponse sendEmail(EmailRequest emailRequest);
 
     EmailResponse sendProdEmail(EmailRequest emailRequest);
+
+    EmailResponse sendJakartaMail(EmailRequest emailRequest);
 }
