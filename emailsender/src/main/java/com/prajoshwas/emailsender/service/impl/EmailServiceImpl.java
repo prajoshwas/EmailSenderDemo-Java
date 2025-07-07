@@ -104,11 +104,7 @@ public class EmailServiceImpl implements EmailService {
 
         try {
 
-            SimpleMailMessage mail = new SimpleMailMessage();
-            mail.setFrom(emailRequest.getFrom().getEmail());
-            mail.setTo(emailRequest.getTo().get(0).getEmail());
-            mail.setSubject(emailRequest.getSubject());
-            mail.setText(emailRequest.getText());
+            SimpleMailMessage mail = initMail(emailRequest);
 
             log.info("Trying to send E-mail to recipient");
             jakartaEmailSender.send(mail);
@@ -134,6 +130,20 @@ public class EmailServiceImpl implements EmailService {
 
         }
 
+        log.info("Email Sent Successfully!");
+
         return response;
+    }
+
+    private SimpleMailMessage initMail(EmailRequest emailRequest) {
+
+        SimpleMailMessage mail = new SimpleMailMessage();
+
+        mail.setFrom(emailRequest.getFrom().getEmail());
+        mail.setTo(emailRequest.getTo().get(0).getEmail());
+        mail.setSubject(emailRequest.getSubject());
+        mail.setText(emailRequest.getText());
+
+        return mail;
     }
 }
