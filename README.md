@@ -1,2 +1,2 @@
 # EmailSenderDemo-Java
-Sending of Email using MailTrap Service
+API for Sending of Email using MailTrap Service & SpringBoot Starter Mail A.K.A Jakarta Mailer
