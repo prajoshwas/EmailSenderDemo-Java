@@ -17,7 +17,7 @@ import com.prajoshwas.emailsender.service.EmailService;
 public class JakartaMailController {
 
     @Autowired
-    EmailService emailService;
+    private EmailService emailService;
 
     @PostMapping(value = "/basic/jkrta/sendEmail")
     private ResponseEntity<EmailResponse> sendJakartaEmail(@RequestBody EmailRequest request) {

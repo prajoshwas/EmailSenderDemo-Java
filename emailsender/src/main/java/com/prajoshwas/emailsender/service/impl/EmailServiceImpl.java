@@ -1,7 +1,10 @@
 package com.prajoshwas.emailsender.service.impl;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +19,9 @@ import com.prajoshwas.emailsender.config.EmailSenderConfig;
 import com.prajoshwas.emailsender.dto.EmailRequest;
 import com.prajoshwas.emailsender.dto.EmailResponse;
 import com.prajoshwas.emailsender.dto.mailtrap.MailTrapResponse;
+import com.prajoshwas.emailsender.dto.mailtrap.MailTrapTestRequest.SendTo;
+import com.prajoshwas.emailsender.entity.AuditLogRequest;
+import com.prajoshwas.emailsender.service.AuditLogService;
 import com.prajoshwas.emailsender.service.EmailService;
 import com.prajoshwas.emailsender.utility.GenericWebClientBuilder;
 
@@ -28,13 +34,16 @@ import reactor.core.publisher.Mono;
 public class EmailServiceImpl implements EmailService {
 
     @Autowired
-    GenericWebClientBuilder genericWebClientBuilder;
+    private EmailSenderConfig emailSenderConfig;
 
     @Autowired
-    EmailSenderConfig emailSenderConfig;
+    private GenericWebClientBuilder genericWebClientBuilder;
 
     @Autowired
     private JavaMailSender jakartaEmailSender;
+
+    @Autowired
+    private AuditLogService auditLogService;
 
     @Override
     public EmailResponse sendEmail(EmailRequest emailRequest) {
@@ -101,49 +110,89 @@ public class EmailServiceImpl implements EmailService {
     public EmailResponse sendJakartaMail(EmailRequest emailRequest) {
 
         EmailResponse response = null;
+        Integer emailSentCount = 0;
 
-        try {
+        List<String> recipients = getRecipientsList(emailRequest.getTo());
 
-            SimpleMailMessage mail = initMail(emailRequest);
+        for (String recipient : recipients) {
 
-            log.info("Trying to send E-mail to recipient");
-            jakartaEmailSender.send(mail);
+            try {
 
-        } catch (MailSendException mse) {
+                SimpleMailMessage mail = generateEmail(emailRequest, recipient);
 
-            log.error("Mail Sending Failed encountered {}", mse.getMessage());
+                log.info("Sending E-mail to recipient");
+                jakartaEmailSender.send(mail);
 
-            response = EmailResponse.builder()
-                    .code("400")
-                    .message("There is an issue sending the email")
-                    .status(HttpStatus.BAD_REQUEST.getReasonPhrase())
-                    .build();
+                log.info("Email Sent Successfully to {}", recipient);
 
-        } catch (Exception ex) {
-            log.error("Unexpected Exception encountered {}", ex.getMessage());
+                log.info("Saving emails sent to the audit logs");
+                auditLogService.saveAuditLog(generateAuditRequest(emailRequest, recipients, 1));
 
-            response = EmailResponse.builder()
-                    .code("500")
-                    .message("Unexpected Exception Occurred")
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
-                    .build();
+                emailSentCount++;
 
+            } catch (MailSendException mse) {
+
+                log.error("Mail Sending Failed encountered {}", mse.getMessage());
+
+                response = EmailResponse.builder()
+                        .code("400")
+                        .message("There is an issue sending the email")
+                        .status(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                        .build();
+
+                log.info("Saving emails not sent to the audit logs");
+                auditLogService.saveAuditLog(generateAuditRequest(emailRequest, recipients, 0));
+
+                break;
+
+            } catch (Exception ex) {
+                log.error("Unexpected Exception encountered {}", ex.getMessage());
+
+                response = EmailResponse.builder()
+                        .code("500")
+                        .message("Unexpected Exception Occurred")
+                        .status(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                        .build();
+
+                log.info("Saving emails not sent to the audit logs");
+                auditLogService.saveAuditLog(generateAuditRequest(emailRequest, recipients, 0));
+
+                break;
+            }
         }
 
-        log.info("Email Sent Successfully!");
-
+        log.info("Total E-mails sent {} out of {}", emailSentCount, emailRequest.getTo().size());
         return response;
     }
 
-    private SimpleMailMessage initMail(EmailRequest emailRequest) {
+    private SimpleMailMessage generateEmail(EmailRequest emailRequest, String recipient) {
 
         SimpleMailMessage mail = new SimpleMailMessage();
 
         mail.setFrom(emailRequest.getFrom().getEmail());
-        mail.setTo(emailRequest.getTo().get(0).getEmail());
+        mail.setTo(recipient);
         mail.setSubject(emailRequest.getSubject());
         mail.setText(emailRequest.getText());
 
         return mail;
+    }
+
+    private AuditLogRequest generateAuditRequest(EmailRequest emailRequest, List<String> recipients, int emailStatus) {
+
+        AuditLogRequest auditLogRequest = AuditLogRequest.builder()
+                .emailTransactionId(UUID.randomUUID().toString())
+                .emailSentStatus(emailStatus)
+                .sentDate(LocalDateTime.now().toString())
+                .sender(emailRequest.getFrom().getEmail())
+                .to(recipients)
+                .build();
+
+        return auditLogRequest;
+    }
+
+    private List<String> getRecipientsList(List<SendTo> emailToList) {
+
+        log.info("Extracting Email Recipients");
+        return emailToList.stream().map(SendTo::getEmail).collect(Collectors.toList());
     }
 }
