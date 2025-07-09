@@ -182,7 +182,7 @@ public class EmailServiceImpl implements EmailService {
         AuditLogRequest auditLogRequest = AuditLogRequest.builder()
                 .emailTransactionId(UUID.randomUUID().toString())
                 .emailSentStatus(emailStatus)
-                .sentDate(LocalDateTime.now().toString())
+                .sentDate(LocalDateTime.now())
                 .sender(emailRequest.getFrom().getEmail())
                 .to(recipients)
                 .build();

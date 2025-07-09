@@ -1,5 +1,6 @@
 package com.prajoshwas.emailsender.entity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import jakarta.persistence.Column;
@@ -29,6 +30,6 @@ public class AuditLogRequest {
     @Column(name = "emailStatus")
     private int emailSentStatus;
     @Column(name = "dateSent")
-    private String sentDate;
+    private LocalDateTime sentDate;
 
 }
