@@ -24,7 +24,7 @@ public class AuditLogRequest {
     private String emailTransactionId;
     @Column(name = "sender")
     private String sender;
-    @Column(name = "to")
+    @Column(name = "recipients")
     private List<String> to;
     @Column(name = "emailStatus")
     private int emailSentStatus;
